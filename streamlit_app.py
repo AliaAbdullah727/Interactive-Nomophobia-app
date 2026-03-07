@@ -216,16 +216,37 @@ def inject_css() -> None:
             margin-bottom: 14px;
           }
           .muted{ color: var(--muted) !important; font-weight: 600; }
-          .pill{
+          \.pill{
             display:inline-block;
             border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.08);
             border-radius: 999px;
             padding: 7px 12px;
             font-weight: 800;
             margin-right: 8px;
             margin-bottom: 8px;
           }
+
+          /* FIX BUTTON VISIBILITY */
+          div.stButton > button {
+            background: linear-gradient(90deg, #7c5cff, #00bfff) !important;
+            color: white !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            border: none !important;
+            padding: 0.6rem 1rem !important;
+          }
+
+          div.stButton > button:hover {
+            background: linear-gradient(90deg, #6848e0, #0099cc) !important;
+            color: white !important;
+          }
+
+          div.stButton > button:disabled {
+            background: rgba(255,255,255,0.2) !important;
+            color: rgba(255,255,255,0.6) !important;
+          }
+
           .progress{
             height: 10px;
             border-radius: 999px;
@@ -298,26 +319,28 @@ def render_survey() -> None:
     start = (page - 1) * 5 + 1
     end = min(page * 5, 20)
 
-    label_to_value = {lbl: val for val, lbl in LIKERT}
-    value_to_label = {val: lbl for val, lbl in LIKERT}
-    labels = [lbl for _, lbl in LIKERT]
+    values = [v for v, _ in LIKERT]
+value_to_label = {v: lbl for v, lbl in LIKERT}
 
-    for i in range(start, end + 1):
-        st.markdown('<div class="qcard">', unsafe_allow_html=True)
-        st.markdown(f"**{QUESTIONS[i-1]}**")
+for i in range(start, end + 1):
+    st.markdown('<div class="qcard">', unsafe_allow_html=True)
+    st.markdown(f"**{QUESTIONS[i-1]}**")
 
-        default = answers.get(i)
-        idx = labels.index(value_to_label[default]) if default in value_to_label else None
+    default = answers.get(i)
+    idx = (values.index(default) if default in values else None)
 
-        chosen = st.radio(
-            label=f"q{i}",
-            options=labels,
-            index=idx,
-            label_visibility="collapsed",
-            key=f"radio_{i}",
-        )
-        answers[i] = int(label_to_value[chosen])
-        st.markdown("</div>", unsafe_allow_html=True)
+    chosen = st.radio(
+        label=f"q{i}",
+        options=values,
+        index=idx,
+        format_func=lambda v: value_to_label.get(v, str(v)),
+        label_visibility="collapsed",
+        key=f"radio_{i}",
+    )
+
+    # Streamlit radios normally always select a value, but keep this safe:
+    answers[i] = int(chosen) if chosen is not None else None
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.session_state.answers = answers
 
