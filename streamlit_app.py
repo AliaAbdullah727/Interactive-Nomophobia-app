@@ -313,6 +313,12 @@ def render_survey() -> None:
     page = int(st.session_state.page)
     answers: Dict[int, int] = st.session_state.answers
 
+    start = (page - 1) * 5 + 1
+    end = min(page * 5, 20)
+
+    page = int(st.session_state.page)
+    answers: Dict[int, int] = st.session_state.answers
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
     render_progress(page, num_pages)
 
